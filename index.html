@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SIMAE - Alerta Encostas SCS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* --- VARIÁVEIS DE COR E ESTILO --- */
+    :root {
+      --slate: #2F3E46;
+      --slate-light: #55707A;
+      --terracotta: #B85C38;
+      --sand: #F4F1EA;
+      --white: #FFFFFF;
+      --green: #4C9A6A;
+      --amber: #E8A33D;
+      --red: #C0392B;
+      --text-dark: #2B3338;
+      --text-muted: #667379;
+      --bg-color: #F8F9FA;
+      
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+      --radius-lg: 20px;
+      --radius-md: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* --- CABEÇALHO --- */
+    header {
+      background-color: var(--slate);
+      color: var(--white);
+      padding: 1.5rem 1.2rem 2rem 1.2rem;
+      border-bottom-left-radius: var(--radius-lg);
+      border-bottom-right-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      z-index: 10;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .header-top h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .user-location {
+      font-size: 0.85rem;
+      color: var(--sand);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* --- CONTAINER PRINCIPAL (Navegação SPA) --- */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      padding-bottom: 90px; /* Espaço para a navbar inferior */
+      position: relative;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- CARDS COMUNS --- */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1rem;
+    }
+
+    /* --- PÁGINA: INÍCIO --- */
+    .status-hero {
+      background: linear-gradient(135deg, var(--amber), #F39C12);
+      color: var(--white);
+      text-align: center;
+      padding: 2rem 1rem;
+      border-radius: var(--radius-lg);
+      margin-top: -30px; /* Sobrepõe o header */
+      box-shadow: 0 10px 20px rgba(232, 163, 61, 0.3);
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 11;
+    }
+
+    .status-hero i {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-hero h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .status-hero p {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      margin-top: 0.5rem;
+    }
+
+    .weather-info {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+    }
+
+    .weather-info div {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .weather-info span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .weather-info strong {
+      font-size: 1.1rem;
+      color: var(--slate);
+    }
+
+    .btn-primary {
+      background-color: var(--terracotta);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 1.2rem;
+      width: 100%;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 15px rgba(184, 92, 56, 0.3);
+      transition: transform 0.2s;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    /* --- PÁGINA: MAPA --- */
+    .map-container {
+      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Santa_Cruz_do_Sul_-_RS.jpg/800px-Santa_Cruz_do_Sul_-_RS.jpg') center/cover;
+      height: 400px;
+      border-radius: var(--radius-lg);
+      position: relative;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .map-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(47, 62, 70, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .map-pin {
+      color: var(--amber);
+      font-size: 3rem;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+      40% {transform: translateY(-20px);}
+      60% {transform: translateY(-10px);}
+    }
+
+    .map-legend {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      background: var(--white);
+      padding: 10px;
+      border-radius: var(--radius-md);
+      display: flex;
+      justify-content: space-around;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.green { background: var(--green); }
+    .dot.amber { background: var(--amber); }
+    .dot.red { background: var(--red); }
+
+    /* --- PÁGINA: ALERTAS --- */
+    .alert-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .alert-item {
+      background: var(--white);
+      border-left: 5px solid;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .alert-item.warning { border-color: var(--amber); }
+    .alert-item.danger { border-color: var(--red); }
+    .alert-item.info { border-color: var(--slate-light); }
+
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .alert-title { font-weight: 700; margin-bottom: 0.3rem; }
+    .alert-desc { font-size: 0.9rem; line-height: 1.4; }
+
+    /* --- PÁGINA: INFO --- */
+    .contact-btn {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: var(--sand);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      color: var(--slate);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    
+    .contact-btn i { font-size: 1.5rem; color: var(--red); }
+
+    /* --- NAVBAR INFERIOR --- */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--white);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.8rem 0;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+      z-index: 100;
+      border-top-left-radius: var(--radius-lg);
+      border-top-right-radius: var(--radius-lg);
+    }
+
+    .nav-item {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .nav-item i { font-size: 1.3rem; }
+    .nav-item.active { color: var(--terracotta); }
+
+    /* --- MODAL DE RELATO (MELHORADO) --- */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(47, 62, 70, 0.8);
+      display: flex;
+      align-items: flex-end;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+    .modal-content {
+      background: var(--white);
+      width: 100%;
+      border-top-left-radius: 25px;
+      border-top-right-radius: 25px;
+      padding: 2rem 1.5rem;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    
+    .form-group select, .form-group textarea, .file-upload {
+      width: 100%; padding: 1rem; border: 1px solid #ddd;
+      border-radius: var(--radius-md); font-size: 1rem;
+      background: var(--sand); outline: none;
+    }
+
+    .file-upload {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      border: 2px dashed var(--slate-light); background: transparent; cursor: pointer;
+    }
+
+    input[type="file"] { display: none; }
+
+    .btn-submit {
+      width: 100%; background: var(--green); color: var(--white);
+      border: none; border-radius: var(--radius-md); padding: 1.2rem;
+      font-size: 1.1rem; font-weight: 700; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-top">
+      <h1>SIMAE</h1>
+      <i class="fas fa-bell"></i>
+    </div>
+    <div class="user-location">
+      <i class="fas fa-map-marker-alt"></i> Bairro Belvedere, Santa Cruz do Sul
+    </div>
+  </header>
+
+  <main>
+    
+    <section id="page-home" class="page active">
+      <div class="status-hero">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h2>ATENÇÃO (R3)</h2>
+        <p>Risco de deslizamento na sua região</p>
+      </div>
+
+      <div class="card weather-info">
+        <div>
+          <span><i class="fas fa-cloud-showers-heavy"></i> Chuva</span>
+          <strong>45 mm</strong>
+        </div>
+        <div>
+          <span><i class="fas fa-tint"></i> Umidade do Solo</span>
+          <strong>82%</strong>
+        </div>
+        <div>
+          <span><i class="fas fa-clock"></i> Última Att.</span>
+          <strong>12:15</strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: var(--slate);">Diretriz atual:</h3>
+        <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.4;">
+          Prepare sua bolsa de emergência. Acompanhe os avisos da Defesa Civil. Se notar trincas no solo, evacue imediatamente.
+        </p>
+      </div>
+
+      <button class="btn-primary" id="btn-open-modal">
+        <i class="fas fa-camera"></i> Relatar Ocorrência Local
+      </button>
+    </section>
+
+    <section id="page-map" class="page">
+      <h2 style="margin-bottom: 1rem; font-size: 1.2rem;">Mapa de Risco Oficial</h2>
+      <div class="map-container">
+        <div class="map-overlay">
+          <i class="fas fa-map-pin map-pin"></i>
+        </div>
+        <div class="map-legend">
+          <div class="legend-item"><div class="dot green"></div> R2</div>
+          <div class="legend-item"><div class="dot amber"></div> R3</div>
+          <div class="legend-item"><div class="dot red"></div> R4 (Crítico)</div>
+        </div>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; text-align: center;">
+        *Áreas vermelhas indicam necessidade de evacuação imediata.
+      </p>
+    </section>
+
+    <section id="page-alerts" class="page">
+      <h2 style="margin-bottom: 1rem; font-size: 1.2rem;">Histórico de Alertas</h2>
+      <ul class="alert-list">
+        <li class="alert-item warning">
+          <div class="alert-header"><span>Bairro Belvedere</span> <span>Há 2 horas</span></div>
+          <div class="alert-title">Elevação para Nível Amarelo</div>
+          <div class="alert-desc">Precipitação atingiu limite crítico. Mantenha-se atento aos sinais geológicos.</div>
+        </li>
+        <li class="alert-item danger">
+          <div class="alert-header"><span>Margarida-Aurora</span> <span>Ontem, 18:30</span></div>
+          <div class="alert-title">Alerta de Evacuação (R4)</div>
+          <div class="alert-desc">Risco iminente de colapso de encosta na Rua Principal. Dirija-se ao abrigo municipal.</div>
+        </li>
+        <li class="alert-item info">
+          <div class="alert-header"><span>Geral</span> <span>24/06/2026</span></div>
+          <div class="alert-title">Boletim Meteorológico</div>
+          <div class="alert-desc">Previsão de chuvas fortes contínuas para as próximas 72 horas.</div>
+        </li>
+      </ul>
+    </section>
+
+    <section id="page-info" class="page">
+      <h2 style="margin-bottom: 1rem; font-size: 1.2rem;">Contatos de Emergência</h2>
+      
+      <a href="tel:199" class="contact-btn">
+        <i class="fas fa-shield-alt"></i>
+        <div>
+          <strong style="display: block;">Defesa Civil</strong>
+          <span style="font-size: 0.85rem; font-weight: 400;">Ligue 199 (Atendimento 24h)</span>
+        </div>
+      </a>
+
+      <a href="tel:193" class="contact-btn">
+        <i class="fas fa-fire-extinguisher"></i>
+        <div>
+          <strong style="display: block;">Corpo de Bombeiros</strong>
+          <span style="font-size: 0.85rem; font-weight: 400;">Ligue 193 (Resgate e Salvamento)</span>
+        </div>
+      </a>
+
+      <div class="card" style="margin-top: 1.5rem;">
+        <h3 style="font-size: 1rem; margin-bottom: 0.8rem; color: var(--slate);">Como agir em caso de risco?</h3>
+        <ul style="font-size: 0.9rem; color: var(--text-muted); padding-left: 1rem; line-height: 1.5;">
+          <li>Observe se portas e janelas estão emperrando de repente.</li>
+          <li>Desligue água, luz e gás se precisar sair.</li>
+          <li>Leve documentos, remédios e roupas íntimas em sacos plásticos.</li>
+          <li>Nunca atravesse ruas alagadas ou áreas já em deslizamento.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-target="page-home">
+      <i class="fas fa-home"></i> Início
+    </button>
+    <button class="nav-item" data-target="page-map">
+      <i class="fas fa-map"></i> Mapa
+    </button>
+    <button class="nav-item" data-target="page-alerts">
+      <i class="fas fa-bell"></i> Alertas
+    </button>
+    <button class="nav-item" data-target="page-info">
+      <i class="fas fa-info-circle"></i> Info
+    </button>
+  </nav>
+
+  <div class="modal-overlay" id="modal-relato">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color: var(--slate);">Nova Ocorrência</h3>
+        <button id="btn-close-modal" style="background:none; border:none; font-size:1.5rem; color:var(--text-muted); cursor:pointer;">&times;</button>
+      </div>
+      
+      <form id="form-relato">
+        <div class="form-group">
+          <label>O que você identificou?</label>
+          <select required>
+            <option value="">Selecione...</option>
+            <option value="1">Trincas no solo ou parede</option>
+            <option value="2">Árvores/Postes inclinando</option>
+            <option value="3">Água barrenta minando do barranco</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Mídia (Foto/Vídeo)</label>
+          <label class="file-upload">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--terracotta);"></i>
+            <span>Toque para abrir a câmera</span>
+            <input type="file" accept="image/*,video/*" capture="environment" required>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>Observação adicional</label>
+          <textarea rows="3" placeholder="Ex: O muro começou a ceder faz 10 minutos..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">
+          <i class="fas fa-paper-plane"></i> Enviar com Localização
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // --- LÓGICA DE NAVEGAÇÃO SPA ---
+    const navItems = document.querySelectorAll('.nav-item');
+    const pages = document.querySelectorAll('.page');
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        // Remove active de todos os botões e páginas
+        navItems.forEach(btn => btn.classList.remove('active'));
+        pages.forEach(page => page.classList.remove('active'));
+
+        // Adiciona active no botão clicado e na página correspondente
+        item.classList.add('active');
+        const targetId = item.getAttribute('data-target');
+        document.getElementById(targetId).classList.add('active');
+      });
+    });
+
+    // --- LÓGICA DO MODAL ---
+    const modal = document.getElementById('modal-relato');
+    const btnOpenModal = document.getElementById('btn-open-modal');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    const formRelato = document.getElementById('form-relato');
+    const submitBtn = document.getElementById('submit-btn');
+
+    btnOpenModal.addEventListener('click', () => modal.classList.add('active'));
+    btnCloseModal.addEventListener('click', () => modal.classList.remove('active'));
+    
+    // Fechar ao clicar na área escura
+    modal.addEventListener('click', (e) => {
+      if(e.target === modal) modal.classList.remove('active');
+    });
+
+    // Simulação de Envio
+    formRelato.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const originalHTML = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Obtendo GPS...';
+      submitBtn.style.background = 'var(--amber)';
+
+      setTimeout(() => {
+        submitBtn.innerHTML = '<i class="fas fa-check"></i> Recebido pela Defesa Civil!';
+        submitBtn.style.background = 'var(--green)';
+        
+        setTimeout(() => {
+          modal.classList.remove('active');
+          formRelato.reset();
+          submitBtn.innerHTML = originalHTML;
+        }, 2000);
+      }, 1500);
+    });
+  </script>
+</body>
+          </html>
